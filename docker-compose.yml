@@ -17,7 +17,7 @@ services:
       - private-network
     labels:
       - "coolify.managed=true"
-      - "coolify.version=1"
+      - "coolify.deploy.timestamp=${TIMESTAMP}"
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`bal.flkpro.pl`)" # Replace with your actual domain
       - "traefik.http.routers.traefik.entrypoints=web,websecure"
@@ -38,7 +38,7 @@ services:
       - ./dummy-content:/usr/share/nginx/html
     labels:
       - "coolify.managed=true"
-      - "coolify.version=1"
+      - "coolify.deploy.timestamp=${TIMESTAMP}"
       - "traefik.enable=true"
       - "traefik.http.routers.dummy.rule=Host(`bal.flkpro.pl`)" # Replace with your actual domain
       - "traefik.http.routers.dummy.entrypoints=web,websecure"
