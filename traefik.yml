@@ -1,0 +1,31 @@
+# Traefik Static Configuration
+api:
+  dashboard: true
+  insecure: true # Set to false in production and use proper authentication
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+  dashboard:
+    address: ":8080"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: private-network
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "your-email@example.com" # Replace with your email
+      storage: "/etc/traefik/acme.json"
+      httpChallenge:
+        entryPoint: web
