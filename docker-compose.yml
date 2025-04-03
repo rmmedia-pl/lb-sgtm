@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  load-balancer:
+    image: traefik:v2.10
+    container_name: traefik-load-balancer
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "3000:3000"
+      - "8080:8080" # Traefik dashboard (optional, can be removed in production)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/config:/etc/traefik
+    networks:
+      - private-network
+    labels:
+      - "coolify.managed=true"
+      - "coolify.version=1"
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`bal.flkpro.pl`)" # Replace with your actual domain
+      - "traefik.http.routers.traefik.entrypoints=web,websecure"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.backend-lb.loadbalancer.servers.0.url=http://10.0.8.3"
+      - "traefik.http.middlewares.backend-lb.loadbalancer.servers.1.url=http://10.0.8.4"
+      - "traefik.http.routers.traefik.middlewares=backend-lb@docker"
+
+  dummy-app:
+    image: nginx:alpine
+    container_name: dummy-app
+    restart: unless-stopped
+    networks:
+      - private-network
+    volumes:
+      - ./dummy-content:/usr/share/nginx/html
+    labels:
+      - "coolify.managed=true"
+      - "coolify.version=1"
+      - "traefik.enable=true"
+      - "traefik.http.routers.dummy.rule=Host(`bal.flkpro.pl`)" # Replace with your actual domain
+      - "traefik.http.routers.dummy.entrypoints=web,websecure"
+      - "traefik.http.routers.dummy.tls=true"
+      - "traefik.http.services.dummy.loadbalancer.server.port=80"
+
+networks:
+  private-network:
+    driver: bridge
